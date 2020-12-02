@@ -10,8 +10,11 @@ fn main() -> std::io::Result<()> {
 	let nums: Vec<usize> = input.split('\n').map(|x| x.parse().unwrap_or(0)).collect();
 	for num in &nums {
 		for i in &nums {
-			if i+num == 2020 {
-				println!("{a}+{b}=2020, {a}x{b}={ab}", a=num, b=i, ab=num*i);
+			for j in &nums {
+				if i+j+num == 2020 {
+					println!("{a}+{b}+{c}=2020, {a}x{b}x{c}={abc}", 
+						a=num, b=i, c=j, abc=num*i*j);
+				}
 			}
 		}
 	}
