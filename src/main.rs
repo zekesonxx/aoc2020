@@ -13,9 +13,25 @@ use std::str;
 #[derive(Clone, Debug)]
 struct Passwd {
 	check_char: char,
-	min: u8,
-	max: u8,
+	min: usize,
+	max: usize,
 	passwd: String
+}
+
+impl Passwd {
+	fn is_p1_valid(&self) -> bool {
+		let mut count = 0;
+		for c in self.passwd.chars() {
+			if c == self.check_char {
+				count += 1;
+			}
+		}
+		count >= self.min && count <= self.max
+	}
+	fn is_p2_valid(&self) -> bool {
+		let chars: Vec<char> = self.passwd.chars().collect();
+		(chars[self.min-1] == self.check_char) ^ (chars[self.max-1] == self.check_char)
+	}
 }
 
 
@@ -46,9 +62,22 @@ fn main() -> std::io::Result<()> {
 	}
 	let mut lines: Vec<&str> = input.split('\n').collect();
 	lines.retain(|&x| x.len() != 0);
+	let (mut p1valid, mut p1invalid) = (0,0);
+	let (mut p2valid, mut p2invalid) = (0,0);
 	for line in &lines {
-		println!("{:?}", passwd_line(line.as_bytes()).unwrap().1);
-		println!("{}", line);
+		let passwd = passwd_line(line.as_bytes()).unwrap().1;
+		if passwd.is_p1_valid() {
+			p1valid += 1;
+		} else {
+			p1invalid += 1;
+		}
+		if passwd.is_p2_valid() {
+			p2valid += 1;
+		} else {
+			p2invalid += 1;
+		}
 	}
+	println!("part 1: {} valid, {} invalid", p1valid, p1invalid);
+	println!("part 2: {} valid, {} invalid", p2valid, p2invalid);
 	Ok(())
 }
