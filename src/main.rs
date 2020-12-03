@@ -48,14 +48,12 @@ impl Map {
 		let mut y = down;
 		let mut trees = 0;
 		while y < self.height() {
-			print!("{}", self.c(x, y));
 			if self.c(x, y) == '#' {
 				trees += 1;
 			}
 			y += down;
 			x += right;
 		}
-		println!();
 		trees
 	}
 }
@@ -71,9 +69,8 @@ fn main() -> std::io::Result<()> {
 	let mut lines: Vec<&str> = input.split('\n').collect();
 	lines.retain(|&x| x.len() != 0);
 	let map = Map::new(lines);
-	let down = argv.get(1).unwrap_or(&"".to_string()).parse().unwrap_or(0);
-	let right = argv.get(2).unwrap_or(&"".to_string()).parse().unwrap_or(0);
-	println!("{:?}, w={}, h={}", map, map.width(), map.height());
-	println!("{} down and {} right hits {} trees", down, right, map.trees_encountered(down, right));
+	let right = argv.get(1).unwrap_or(&"".to_string()).parse().unwrap_or(0);
+	let down = argv.get(2).unwrap_or(&"".to_string()).parse().unwrap_or(0);
+	println!("{} down and {} right hits {} trees", down, right, map.trees_encountered(right, down));
 	Ok(())
 }
