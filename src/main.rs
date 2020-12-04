@@ -1,4 +1,4 @@
-extern crate nom;
+//extern crate nom;
 
 //use nom::IResult;
 //use nom::bytes::complete::{take, take_while1};
@@ -6,58 +6,11 @@ extern crate nom;
 //use nom::character::{is_digit, is_alphanumeric};
 //use nom::sequence::tuple;
 
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 //use std::str;
 use std::env;
-
-#[derive(Clone, Debug)]
-struct Map {
-	//
-	// pattern[y][x]
-	//   x ->
-	//  y..##..
-	//  |#...#.
-	// \/.#....
-	pub pattern: Vec<Vec<char>>
-}
-
-impl Map {
-	fn new(input: Vec<&str>) -> Self {
-		let mut pattern = vec![];
-		for line in input {
-			pattern.push(line.chars().collect());
-		}
-		Map {
-			pattern
-		}
-	}
-	fn width(&self) -> usize {
-		self.pattern[0].len()
-	}
-	fn height(&self) -> usize {
-		self.pattern.len()
-	}
-	fn c(&self, x: usize, y: usize) -> char {
-		self.pattern[y][x%self.width()]
-	}
-	fn trees_encountered(&self, right: usize, down: usize) -> usize {
-		assert!(right > 0, "right must be greater than 0");
-		assert!(down > 0, "down must be greater than 0");
-		let mut x = right;
-		let mut y = down;
-		let mut trees = 0;
-		while y < self.height() {
-			if self.c(x, y) == '#' {
-				trees += 1;
-			}
-			y += down;
-			x += right;
-		}
-		trees
-	}
-}
-
 
 fn main() -> std::io::Result<()> {
 	let argv: Vec<String> = env::args().collect();
@@ -66,11 +19,33 @@ fn main() -> std::io::Result<()> {
 		let mut file = File::open("input.txt")?;
 		file.read_to_string(&mut input)?;
 	}
-	let mut lines: Vec<&str> = input.split('\n').collect();
-	lines.retain(|&x| x.len() != 0);
-	let map = Map::new(lines);
-	let right = argv.get(1).unwrap_or(&"".to_string()).parse().unwrap_or(0);
-	let down = argv.get(2).unwrap_or(&"".to_string()).parse().unwrap_or(0);
-	println!("{} down and {} right hits {} trees", down, right, map.trees_encountered(right, down));
+	//let mut lines: Vec<&str> = input.split('\n').collect();
+	let mut passports: Vec<HashMap<&str, &str>> = vec![];
+	let mut temp: HashMap<&str, &str> = HashMap::new();
+	for line in input.split('\n') {
+		if line.len() == 0 {
+			passports.push(temp);
+			temp = HashMap::new();
+		} else {
+			for item in line.split(' ') {
+				let item: Vec<&str> = item.split(':').collect();
+				temp.insert(item[0], item[1]);
+			}
+		}
+	}
+	let mut valid = 0;
+	for passport in passports.into_iter() {
+		if passport.contains_key("byr") &&
+		   passport.contains_key("iyr") &&
+		   passport.contains_key("eyr") &&
+		   passport.contains_key("hgt") &&
+		   passport.contains_key("hcl") &&
+		   passport.contains_key("ecl") &&
+		   passport.contains_key("pid") {
+		   	valid += 1
+		   }
+	}
+	//lines.retain(|&x| x.len() != 0);
+	println!("{} valid", valid);
 	Ok(())
 }
