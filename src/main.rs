@@ -35,15 +35,81 @@ fn main() -> std::io::Result<()> {
 	}
 	let mut valid = 0;
 	for passport in passports.into_iter() {
-		if passport.contains_key("byr") &&
+		if !(passport.contains_key("byr") &&
 		   passport.contains_key("iyr") &&
 		   passport.contains_key("eyr") &&
 		   passport.contains_key("hgt") &&
 		   passport.contains_key("hcl") &&
 		   passport.contains_key("ecl") &&
-		   passport.contains_key("pid") {
-		   	valid += 1
-		   }
+		   passport.contains_key("pid")) {
+		   	continue;
+		}
+		let byrraw = passport.get("byr").unwrap();
+		let byr = byrraw.parse::<usize>().unwrap();
+		if byr < 1920 || byr > 2002 || byrraw.len() != 4 {
+			println!("invalid {:?} due to byr", passport);
+			continue;
+		}
+		let iyrraw = passport.get("iyr").unwrap();
+		let iyr = iyrraw.parse::<usize>().unwrap();
+		if iyr < 2010 || iyr > 2020 || iyrraw.len() != 4 {
+			println!("invalid {:?} due to iyr", passport);
+			continue;
+		}
+		let eyrraw = passport.get("eyr").unwrap();
+		let eyr = eyrraw.parse::<usize>().unwrap();
+		if eyr < 2020 || eyr > 2030 || eyrraw.len() != 4 {
+			println!("invalid {:?} due to eyr", passport);
+			continue;
+		}
+
+		let hgtraw = passport.get("hgt").unwrap();
+		if hgtraw.len() != 5 && hgtraw.len() != 4 {	
+			println!("invalid {:?} due to height", passport);
+			continue;
+		}
+		let hgt = hgtraw[..hgtraw.len()-2].parse::<usize>().unwrap_or_default();
+		let hgtunit = hgtraw.char_indices().rev().map(|(i, _)| i).nth(1).unwrap();
+		let hgtunit = &hgtraw[hgtunit..];
+		println!("grr {} {}", hgt, hgtunit);
+		if (hgtunit == "cm" && (hgt < 150 || hgt > 193)) ||
+		   (hgtunit == "in" && (hgt < 59 || hgt > 76)) {
+			println!("invalid {:?} due to height", passport);
+			continue;
+		}
+
+		let mut validhcl = true;
+		let hcl = passport.get("hcl").unwrap();
+		if hcl.len() != 7 {
+			println!("invalid {:?} due to hcl", passport);
+			continue;
+		}
+		for c in hcl.char_indices() {
+			match c.1 {
+				'#' => if c.0 != 0 { validhcl = false },
+				'0'..='9' | 'a'..='f' => if c.0 == 0 { validhcl = false },
+				_ => validhcl=false
+			}
+		}
+		if !validhcl {
+			println!("invalid {:?} due to hcl", passport);
+			continue;
+		}
+		match *passport.get("ecl").unwrap() {
+			"amb" | "blu" | "brn" | "gry" | "grn" | "hzl" | "oth" => {},
+			_ => {
+		   		println!("invalid {:?} due to ecl", passport);
+				continue;
+			}
+		}
+		let mut pid: Vec<char> = passport.get("pid").unwrap().chars().collect();
+		pid.retain(|i| ('0'..='9').contains(i));
+		if pid.len() != 9 {
+			println!("invalid {:?} due to pid", passport);
+			continue;
+		}
+		println!("valid {:?}", passport);
+		valid += 1;
 	}
 	//lines.retain(|&x| x.len() != 0);
 	println!("{} valid", valid);
