@@ -39,7 +39,6 @@ impl BinaryPass {
 		let mut half;
 		for c in input {
 			half = (max-min)/2;
-			println!("min={}, max={}, half={}", min, max, half);
 			if *c == 'F' || *c == 'L' {
 				max -= half;
 			} else if *c == 'B' || *c == 'R' {
@@ -70,8 +69,14 @@ fn main() -> std::io::Result<()> {
 	let mut lines: Vec<&str> = input.split('\n').collect();
 	lines.retain(|&x| x.len() != 0);
 	let passes: Vec<BinaryPass> = lines.par_iter().map(|x| BinaryPass::new(x)).flatten().collect();
-	let highest = passes.par_iter().map(|x| x.seat_id()).max().unwrap();
-	println!("highest: {}", highest);
-
+	let mut seats: Vec<usize> = passes.par_iter().map(|x| x.seat_id()).collect();
+	seats.sort();
+	let highest = seats.last().unwrap();
+	let lowest = seats.first().unwrap();
+	let sum: usize = seats.par_iter().map(|x|x-lowest).sum();
+	let n = seats.len();
+	let missing = n * (n+1)/2 - sum;
+	println!("highest: {}, lowest: {}", highest, lowest);
+	println!("missing: {}", missing+lowest);
 	Ok(())
 }
