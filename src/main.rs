@@ -37,7 +37,7 @@ fn a_bag(input: &str) -> IResult<&str, (usize, &str)> {
 		alt((tag(","), tag("."))),
 		multispace0
 	))(input)?;
-	println!("{}", input);
+	//println!("{}", input);
 	Ok((input, (q, name)))
 }
 
@@ -46,12 +46,12 @@ fn bag_line(input: &str) -> IResult<&str, (&str, Vec<(usize, &str)>)> {
 		take_until(" bags"),
 		tag(" bags contain ")
 	))(input)?;
-	println!("{:?}", bagname);
-	println!("{:?}", input);
+	//println!("{:?}", bagname);
+	//println!("{:?}", input);
 	if input == "no other bags." {
 		Ok((input, (bagname, vec![])))
 	} else {
-		let (input, (subbags)) = many1(a_bag)(input)?;
+		let (input, subbags) = many1(a_bag)(input)?;
 		Ok((input, (bagname, subbags) ))
 	}
 }
@@ -65,10 +65,28 @@ fn main() -> std::io::Result<()> {
 	}
 	let mut lines: Vec<&str> = input.split('\n').collect();
 	lines.retain(|&x| x.len() != 0);
-	//let mut bags: HashMap<&str, HashMap<&str, usize>> = HashMap::new();
+	let mut bags: HashMap<&str, Vec<(usize, &str)>> = HashMap::new();
 	for line in lines {
-		let _ = bag_line(line).unwrap();
-		println!();
+		let k = bag_line(line).unwrap().1;
+		bags.insert(k.0, k.1);
 	}
+	fn has_shiny(bags: &HashMap<&str, Vec<(usize, &str)>>, x: &str) -> bool {
+		let k = bags.get(x).unwrap();
+		for sub in k {
+			if sub.1 == "shiny gold" {
+				return true;
+			} else if has_shiny(bags, sub.1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	let mut shiny = 0;
+	for bag in bags.keys() {
+		if has_shiny(&bags, &bag) {
+			shiny += 1;
+		}
+	}
+	println!("shinys: {}", shiny);
 	Ok(())
 }
