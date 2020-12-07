@@ -34,19 +34,27 @@ fn part2(nums: &[usize]) -> usize {
 mod tests {
 	use super::{day1_gen, part1, part2};
 
+	static EXAMPLE: &'static str = "1721\n979\n366\n299\n675\n1456";
+
+	lazy_static! {
+		static ref INPUT: &'static str = {
+			include_str!("../input/2020/day1.txt").trim_end_matches('\n')
+		};
+	}
+
 	#[test]
 	fn part_1() {
-		assert_eq!(part1(&day1_gen("1721\n979\n366\n299\n675\n1456")), 514579);
+		assert_eq!(part1(&day1_gen(EXAMPLE)), 514579);
 	}
 	
 	#[test]
 	fn part_2() {
-		assert_eq!(part2(&day1_gen("1721\n979\n366\n299\n675\n1456")), 241861950);
+		assert_eq!(part2(&day1_gen(EXAMPLE)), 241861950);
 	}
 
 	#[test]
 	fn real_answers() {
-		let input = day1_gen(include_str!("../input/2020/day1.txt").trim_end_matches('\n'));
+		let input = day1_gen(&INPUT);
 		assert_eq!(part1(&input), 633216);
 		assert_eq!(part2(&input), 68348924);
 	}
