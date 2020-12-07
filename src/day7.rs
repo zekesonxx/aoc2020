@@ -9,6 +9,8 @@ use nom::branch::*;
 
 use std::collections::HashMap;
 
+use rayon::prelude::*;
+
 fn decimal(input: &str) -> IResult<&str, usize> {
   let (input, u) = recognize(
     many1(
@@ -46,24 +48,24 @@ fn bag_line(input: &str) -> IResult<&str, (&str, Vec<(usize, &str)>)> {
 	}
 }
 
-fn has_shiny(bags: &HashMap<&str, Vec<(usize, &str)>>, x: &str) -> bool {
-	let k = bags.get(x).unwrap();
-	for sub in k {
-		if sub.1 == "shiny gold" {
-			return true;
-		} else if has_shiny(bags, sub.1) {
-			return true;
-		}
-	}
-	return false;
-}
 
-#[aoc(day7, part1)]
+#[aoc(day7, part1, orig)]
 fn part1(input: &str) -> usize {
 	let mut bags: HashMap<&str, Vec<(usize, &str)>> = HashMap::new();
 	for line in input.split('\n') {
 		let k = bag_line(line).unwrap().1;
 		bags.insert(k.0, k.1);
+	}
+	fn has_shiny(bags: &HashMap<&str, Vec<(usize, &str)>>, x: &str) -> bool {
+		let k = bags.get(x).unwrap();
+		for sub in k {
+			if sub.1 == "shiny gold" {
+				return true;
+			} else if has_shiny(bags, sub.1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	let mut shiny = 0;
 	for bag in bags.keys() {
@@ -72,6 +74,30 @@ fn part1(input: &str) -> usize {
 		}
 	}
 	shiny
+}
+
+#[aoc(day7, part1, orig_par)]
+fn part1_par(input: &str) -> usize {
+	let mut bags: HashMap<&str, Vec<(usize, &str)>> = HashMap::new();
+	for line in input.split('\n') {
+		let k = bag_line(line).unwrap().1;
+		bags.insert(k.0, k.1);
+	}
+	fn has_shiny(bags: &HashMap<&str, Vec<(usize, &str)>>, x: &str) -> bool {
+		let k = bags.get(x).unwrap();
+		for sub in k {
+			if sub.1 == "shiny gold" {
+				return true;
+			} else if has_shiny(bags, sub.1) {
+				return true;
+			}
+		}
+		return false;
+	}
+	bags.keys().par_bridge().map(|&bag| if has_shiny(&bags, bag) {
+			1usize
+		} else { 0 }).sum::<usize>()
+	
 }
 
 #[aoc(day7, part2)]
