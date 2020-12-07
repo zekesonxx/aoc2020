@@ -9,6 +9,8 @@ edition = "2018"
 [dependencies]
 rayon = "1.5.0"
 nom = "6.0.1"
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
 
 [profile.release]
 panic = 'abort'
