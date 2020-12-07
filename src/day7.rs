@@ -4,12 +4,13 @@ use nom::character::complete::*;
 use nom::sequence::*;
 use nom::multi::*;
 use nom::combinator::*;
-use nom::character::*;
 use nom::branch::*;
 
 use std::collections::HashMap;
 
 use rayon::prelude::*;
+use petgraph::graphmap::DiGraphMap;
+use petgraph::algo::has_path_connecting;
 
 fn decimal(input: &str) -> IResult<&str, usize> {
   let (input, u) = recognize(
@@ -98,6 +99,26 @@ fn part1_par(input: &str) -> usize {
 			1usize
 		} else { 0 }).sum::<usize>()
 	
+}
+
+#[aoc(day7, part1, graph)]
+fn part1_graph(input: &str) -> usize {
+	let mut bags = DiGraphMap::<&str, usize>::new();
+	for line in input.split('\n') {
+		let bag = bag_line(line).unwrap().1;
+		let node = bags.add_node(bag.0);
+		for b in bag.1 {
+			bags.add_edge(b.1, node, b.0);
+		}
+	}
+	//println!("{:?}", Dot::with_config(&bags, &[]));
+	bags.nodes().par_bridge().map(|n| {
+		if has_path_connecting(&bags, "shiny gold", n, None) {
+			1
+		} else {
+			0
+		}
+	}).sum::<usize>()-1
 }
 
 #[aoc(day7, part2)]
