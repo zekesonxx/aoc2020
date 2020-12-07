@@ -88,5 +88,16 @@ fn main() -> std::io::Result<()> {
 		}
 	}
 	println!("shinys: {}", shiny);
+
+	fn bag_len(bags: &HashMap<&str, Vec<(usize, &str)>>, x: &str) -> usize {
+		let mut size = 1;
+		let k = bags.get(x).unwrap();
+		for sub in k {
+			size += sub.0*bag_len(bags, sub.1);
+		}
+		size
+	}
+	println!("shiny contains {} bags", bag_len(&bags, "shiny gold")-1);
+
 	Ok(())
 }
