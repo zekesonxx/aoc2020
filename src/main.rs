@@ -1,11 +1,14 @@
-//extern crate nom;
+extern crate nom;
 extern crate rayon;
 
-//use nom::IResult;
-//use nom::bytes::complete::{take, take_while1};
-//use nom::character::complete::char;
-//use nom::character::{is_digit, is_alphanumeric};
-//use nom::sequence::tuple;
+use nom::IResult;
+use nom::bytes::complete::*;
+use nom::character::complete::*;
+use nom::sequence::*;
+use nom::multi::*;
+use nom::combinator::*;
+use nom::character::*;
+use nom::branch::*;
 
 //use rayon::prelude::*;
 
@@ -16,6 +19,43 @@ use std::io::prelude::*;
 //use std::env;
 //use std::convert::TryInto;
 
+fn decimal(input: &str) -> IResult<&str, usize> {
+  let (input, (u)) = recognize(
+    many1(
+      terminated(one_of("0123456789"), many0(char('_')))
+    )
+  )(input)?;
+  Ok((input, u.parse().unwrap()))
+}
+
+fn a_bag(input: &str) -> IResult<&str, (usize, &str)> {
+	let (input, (q, _, name, _, _, _)) = tuple((
+		decimal,
+		multispace1,
+		take_until(" bag"),
+		alt((tag(" bags"), tag(" bag"))),
+		alt((tag(","), tag("."))),
+		multispace0
+	))(input)?;
+	println!("{}", input);
+	Ok((input, (q, name)))
+}
+
+fn bag_line(input: &str) -> IResult<&str, (&str, Vec<(usize, &str)>)> {
+	let (input, (bagname, _)) = tuple((
+		take_until(" bags"),
+		tag(" bags contain ")
+	))(input)?;
+	println!("{:?}", bagname);
+	println!("{:?}", input);
+	if input == "no other bags." {
+		Ok((input, (bagname, vec![])))
+	} else {
+		let (input, (subbags)) = many1(a_bag)(input)?;
+		Ok((input, (bagname, subbags) ))
+	}
+}
+
 fn main() -> std::io::Result<()> {
 	//let argv: Vec<String> = env::args().collect();
 	let mut input = String::new();
@@ -23,26 +63,12 @@ fn main() -> std::io::Result<()> {
 		let mut file = File::open("input.txt")?;
 		file.read_to_string(&mut input)?;
 	}
-	//let mut lines: Vec<&str> = input.split('\n').collect();
-	let mut total_groups = 0;
-	let mut chars: HashMap<char, usize> = HashMap::new();
-	let mut people = 0usize;
-	for line in input.split('\n') {
-		if line.len() == 0 {
-			chars.retain(|_, v| *v == people);
-			total_groups += chars.len();
-			//reset
-			people = 0;
-			chars.retain(|_, _| false);
-		} else {
-			for c in line.chars() {
-				let i = chars.get(&c).unwrap_or(&0).clone();
-				chars.insert(c, i+1);
-			}
-			people += 1;
-		}
+	let mut lines: Vec<&str> = input.split('\n').collect();
+	lines.retain(|&x| x.len() != 0);
+	//let mut bags: HashMap<&str, HashMap<&str, usize>> = HashMap::new();
+	for line in lines {
+		let _ = bag_line(line).unwrap();
+		println!();
 	}
-	println!("{} groups", total_groups);
-	//lines.retain(|&x| x.len() != 0);
 	Ok(())
 }
