@@ -46,6 +46,40 @@ fn part2(input: &str) -> usize {
 	total_groups
 }
 
+#[aoc(day6, part2, improved)]
+fn part2_improved(input: &str) -> usize {
+	input.split("\n\n")
+	.map(|group| {
+		let mut people = 1;
+		let mut bytes = group.as_bytes().to_owned();
+		let mut groups = 0;
+		bytes.sort_unstable();
+		//println!("{:?}", bytes);
+		let mut l = b' ';
+		let mut c = 0;
+		for b in bytes {
+			if b == b'\n' {
+				people += 1;
+			} else {
+				if l == b {
+					c += 1;
+				} else {
+					if c == people {
+						groups += 1;
+					}
+					c = 1;
+					l = b;
+				}
+			}
+		}
+		if c == people {
+			groups += 1;
+		}
+		//println!("{} people {} groups", people, groups);
+		groups
+	}).sum()
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -80,6 +114,11 @@ b";
 	#[test]
 	fn part_2() {
 		assert_eq!(part2(&EXAMPLE), 6);
+	}
+	
+	#[test]
+	fn part_2_improved() {
+		assert_eq!(part2_improved(&EXAMPLE), 6);
 	}
 
 	#[test]
