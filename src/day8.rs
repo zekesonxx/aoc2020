@@ -7,6 +7,31 @@ enum Instruction {
 	Jmp(isize)
 }
 
+fn cpu(ops: &[Instruction], swap: Option<usize>) -> Result<isize, isize> {
+	let mut visited = vec![false; ops.len()];
+	let mut ptr = 0;
+	let mut acc = 0;
+	let swap = swap.unwrap_or(usize::MAX);
+	while ptr < ops.len() && visited[ptr] != true {
+		visited[ptr] = true;
+		use Instruction::*;
+		match ops[ptr] {
+			Nop(x) => if ptr == swap {
+				ptr = usize::try_from(isize::try_from(ptr).unwrap() + x).unwrap()
+			} else { ptr += 1; },
+			Acc(x) => { acc += x; ptr += 1; },
+			Jmp(x) => if ptr != swap {
+				ptr = usize::try_from(isize::try_from(ptr).unwrap() + x).unwrap()
+			} else { ptr += 1; },
+		}
+	}
+	if ptr==ops.len() {
+		Ok(acc)
+	} else {
+		Err(acc)
+	}
+}
+
 use std::convert::TryFrom;
 
 #[aoc_generator(day8)]
@@ -26,45 +51,7 @@ fn day_gen(input: &str) -> Vec<Instruction> {
 
 #[aoc(day8, part1)]
 fn part1(ops: &[Instruction]) -> isize {
-	let mut visited = vec![false; ops.len()];
-	let mut ptr = 0;
-	let mut acc = 0;
-	while visited[ptr] != true {
-		visited[ptr] = true;
-		//println!("{:?} ptr={} acc={}", ops[ptr], ptr, acc);
-		use Instruction::*;
-		match ops[ptr] {
-			Nop(_) => { ptr += 1; },
-			Acc(x) => { acc += x; ptr += 1; },
-			Jmp(x) => ptr = usize::try_from(isize::try_from(ptr).unwrap() + x).unwrap()
-		}
-		//println!("ptr={} acc={}", ptr, acc);
-	}
-	acc
-}
-
-fn cpu(ops: &[Instruction], swap: usize) -> Option<isize> {
-	let mut visited = vec![false; ops.len()];
-	let mut ptr = 0;
-	let mut acc = 0;
-	while ptr < ops.len() && visited[ptr] != true {
-		visited[ptr] = true;
-		use Instruction::*;
-		match ops[ptr] {
-			Nop(x) => if ptr == swap {
-				ptr = usize::try_from(isize::try_from(ptr).unwrap() + x).unwrap()
-			} else { ptr += 1; },
-			Acc(x) => { acc += x; ptr += 1; },
-			Jmp(x) => if ptr != swap {
-				ptr = usize::try_from(isize::try_from(ptr).unwrap() + x).unwrap()
-			} else { ptr += 1; },
-		}
-	}
-	if ptr==ops.len() {
-		Some(acc)
-	} else {
-		None
-	}
+	cpu(ops, None).unwrap_err()
 }
 
 #[aoc(day8, part2)]
@@ -76,6 +63,6 @@ fn part2(ops: &[Instruction]) -> isize {
 			_ => None
 		}
 	}).flatten().find_map_any(|x| {
-		cpu(ops, x)
+		cpu(ops, Some(x)).ok()
 	}).unwrap()
 }
