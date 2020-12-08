@@ -164,6 +164,11 @@ dotted black bags contain no other bags.";
 	}
 	
 	#[test]
+	fn graph() {
+		assert_eq!(part1_graph(&EXAMPLE), 4);
+	}
+	
+	#[test]
 	fn part_2() {
 		assert_eq!(part2(&EXAMPLE), 32);
 	}
