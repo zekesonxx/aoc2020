@@ -66,3 +66,16 @@ fn part2(ops: &[Instruction]) -> isize {
 		cpu(ops, Some(x)).ok()
 	}).unwrap()
 }
+
+#[aoc(day8, part2, nopar)]
+fn part2_npar(ops: &[Instruction]) -> isize {
+	ops.iter().enumerate().map(|x| {
+		use Instruction::*;
+		match x.1 {
+			Nop(_) | Jmp(_) => Some(x.0),
+			_ => None
+		}
+	}).flatten().find_map(|x| {
+		cpu(ops, Some(x)).ok()
+	}).unwrap()
+}
