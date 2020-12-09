@@ -111,8 +111,27 @@ fn part1_graph(input: &str) -> usize {
 			bags.add_edge(b.1, node, b.0);
 		}
 	}
-	//println!("{:?}", Dot::with_config(&bags, &[]));
 	bags.nodes().par_bridge().map(|n| {
+		if has_path_connecting(&bags, "shiny gold", n, None) {
+			1
+		} else {
+			0
+		}
+	}).sum::<usize>()-1
+}
+
+#[aoc(day7, part1, graph_precollect)]
+fn part1_graph_precollect(input: &str) -> usize {
+	let mut bags = DiGraphMap::<&str, usize>::new();
+	for line in input.split('\n') {
+		let bag = bag_line(line).unwrap().1;
+		let node = bags.add_node(bag.0);
+		for b in bag.1 {
+			bags.add_edge(b.1, node, b.0);
+		}
+	}
+	let bagnames: Vec<&str> = bags.nodes().collect();
+	bagnames.par_iter().map(|n| {
 		if has_path_connecting(&bags, "shiny gold", n, None) {
 			1
 		} else {
