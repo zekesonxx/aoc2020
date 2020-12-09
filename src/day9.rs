@@ -35,3 +35,34 @@ fn part1(input: &str) -> usize {
 	}
 	unreachable!("unsolvable input");
 }
+
+const PART1_ANSWER: usize = 1038347917;
+
+#[aoc(day9, part2)]
+fn part2(input: &str) -> usize {
+	let nums: Vec<usize> = input.split('\n').map(|x| x.parse()).flatten().collect();
+	(2..=nums.len()).find_map(|x| {
+		nums.windows(x).find_map(|x| { 
+		if x.iter().sum::<usize>() == PART1_ANSWER {
+			let mut max = 0;
+			let mut min = usize::MAX;
+			for i in x {
+				if *i < min {
+					min = *i;
+				}
+				if *i > max {
+					max = *i;
+				}
+			}
+			Some(max+min)
+		} else {
+			None
+		}
+		})
+	}).unwrap()
+}
+
+
+
+
+
