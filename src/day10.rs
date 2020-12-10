@@ -1,7 +1,5 @@
 use itertools::Itertools;
 
-use rayon::prelude::*;
-
 #[aoc_generator(day10)]
 fn day10_gen(input: &str) -> Vec<usize> {
 	let mut jolts: Vec<usize> = input.split('\n').map(|x| x.parse()).flatten().collect();
@@ -33,45 +31,77 @@ fn part1(jolts: &[usize]) -> usize {
 }
 
 fn adapter_chain(jolts: &[usize], skips: &[&usize]) -> bool {
-	let mut lastjolt = 0;
+	let mut lastjolt: usize = 0;
+	let highest = **(skips.get(skips.len()-1).unwrap_or(&&usize::MAX));
 	for adapter in jolts {
-		if skips.contains(&adapter) {
+		if skips.binary_search(&adapter).is_ok() {
 			continue;
 		}
 		let diff = adapter-lastjolt;
 		if diff > 3 {
 			return false;
 		}
+		if *adapter >= highest {
+			return true;
+		}
 		lastjolt = *adapter;
 	}
 	true
 }
 
+
+
 #[aoc(day10, part2)]
-fn part2(jolts: &[usize]) -> usize {
-	let mut removable: Vec<usize> = vec![];
+fn part2_try2(jolts: &[usize]) -> usize {
+	let mut pockets: Vec<Vec<usize>> = vec![];
+	let mut pocket: Vec<usize> = vec![];
 	let mut v = jolts.iter().peekable();
 	let mut lastjolt = 0;
 	while let Some(jolt) = v.next() {
-		let diff = jolt-lastjolt;
 		if let Some(peek) = v.peek() {
 			if (*peek)-lastjolt <= 3 {
-				removable.push(*jolt);
+				pocket.push(*jolt);
+			} else {
+				if !pocket.is_empty() {
+					//we just exited a pocket
+					pockets.push(pocket);
+					pocket = vec![];
+				}
 			}
-		}
+		} 
 		lastjolt = *jolt;
 	}
-	println!("removable: {:?}", removable);
-	let mut possible = 1;
-	for i in 1..=removable.len() {
-		let combos: Vec<Vec<&usize>> = removable.iter().combinations(i).collect();
-		possible += combos.par_iter()
-		.map(|x| if adapter_chain(jolts, x.as_slice()) {
-			//println!("can skip {:?}", x);
-			1 
-		} else { 
-			0
-		}).sum::<usize>();
+	let mut combinations = 1;
+	let mut pockets_options = vec![];
+	for pocket in &pockets {
+		if pocket.len() == 1 {
+			pockets_options.push(2);
+			combinations *= 2
+		} else {
+			let mut total = 1;
+			for i in 1..pocket.len()+1 {
+				total += pocket.iter().combinations(i)
+				.map(|x| {
+					if adapter_chain(jolts, x.as_slice()) {
+						1
+					} else {
+						0
+					}
+				}).sum::<usize>();
+			}
+			combinations *= total;
+			pockets_options.push(total);
+		}
 	}
-	possible
+	combinations
 }
+
+
+
+
+
+
+
+
+
+
