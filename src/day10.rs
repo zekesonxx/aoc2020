@@ -61,10 +61,11 @@ fn part2(jolts: &[usize]) -> usize {
 		}
 		lastjolt = *jolt;
 	}
-	//println!("removable: {:?}", removable);
+	println!("removable: {:?}", removable);
 	let mut possible = 1;
 	for i in 1..=removable.len() {
-		possible += removable.iter().combinations(i).par_bridge()
+		let combos: Vec<Vec<&usize>> = removable.iter().combinations(i).collect();
+		possible += combos.par_iter()
 		.map(|x| if adapter_chain(jolts, x.as_slice()) {
 			//println!("can skip {:?}", x);
 			1 
