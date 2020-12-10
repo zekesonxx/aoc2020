@@ -72,10 +72,8 @@ fn part2_try2(jolts: &[usize]) -> usize {
 		lastjolt = *jolt;
 	}
 	let mut combinations = 1;
-	let mut pockets_options = vec![];
 	for pocket in &pockets {
 		if pocket.len() == 1 {
-			pockets_options.push(2);
 			combinations *= 2
 		} else {
 			let mut total = 1;
@@ -90,7 +88,6 @@ fn part2_try2(jolts: &[usize]) -> usize {
 				}).sum::<usize>();
 			}
 			combinations *= total;
-			pockets_options.push(total);
 		}
 	}
 	combinations
