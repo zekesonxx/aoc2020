@@ -49,11 +49,21 @@ fn adapter_chain(jolts: &[usize], skips: &[&usize]) -> bool {
 
 #[aoc(day10, part2)]
 fn part2(jolts: &[usize]) -> usize {
-	let mut removable = jolts.to_vec();
-	removable.remove(0);
-	removable.pop();
-	let mut possible = 0usize;
-	for i in 1..jolts.len() {
+	let mut removable: Vec<usize> = vec![];
+	let mut v = jolts.iter().peekable();
+	let mut lastjolt = 0;
+	while let Some(jolt) = v.next() {
+		let diff = jolt-lastjolt;
+		if let Some(peek) = v.peek() {
+			if (*peek)-lastjolt <= 3 {
+				removable.push(*jolt);
+			}
+		}
+		lastjolt = *jolt;
+	}
+	//println!("removable: {:?}", removable);
+	let mut possible = 1;
+	for i in 1..=removable.len() {
 		possible += removable.iter().combinations(i).par_bridge()
 		.map(|x| if adapter_chain(jolts, x.as_slice()) {
 			//println!("can skip {:?}", x);
