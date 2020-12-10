@@ -1,14 +1,22 @@
+use itertools::Itertools;
 
-#[aoc(day10, part1)]
-fn part1(input: &str) -> isize {
-	let mut jolts: Vec<isize> = input.split('\n').map(|x| x.parse()).flatten().collect();
+use rayon::prelude::*;
+
+#[aoc_generator(day10)]
+fn day10_gen(input: &str) -> Vec<usize> {
+	let mut jolts: Vec<usize> = input.split('\n').map(|x| x.parse()).flatten().collect();
 	jolts.sort();
 	let highest = jolts.iter().max().unwrap();
 	let device = highest+3;
+	jolts.push(device);
+	jolts
+}
+
+#[aoc(day10, part1)]
+fn part1(jolts: &[usize]) -> usize {
 	let mut lastjolt = 0;
 	let mut diff1 = 0;
 	let mut diff3 = 0;
-	jolts.push(device);
 	for adapter in jolts {
 		let diff = adapter-lastjolt;
 		match diff {
@@ -17,9 +25,42 @@ fn part1(input: &str) -> isize {
 			3 => diff3 += 1,
 			_ => {}
 		}
-		println!("jump {} to {} (diff {})", lastjolt, adapter, diff);
-		lastjolt = adapter;
+		//println!("jump {} to {} (diff {})", lastjolt, adapter, diff);
+		lastjolt = *adapter;
 	}
-	println!("{} 1 jumps, {} 3 jumps", diff1, diff3);
+	//println!("{} 1 jumps, {} 3 jumps", diff1, diff3);
 	diff1*diff3
+}
+
+fn adapter_chain(jolts: &[usize], skips: &[&usize]) -> bool {
+	let mut lastjolt = 0;
+	for adapter in jolts {
+		if skips.contains(&adapter) {
+			continue;
+		}
+		let diff = adapter-lastjolt;
+		if diff > 3 {
+			return false;
+		}
+		lastjolt = *adapter;
+	}
+	true
+}
+
+#[aoc(day10, part2)]
+fn part2(jolts: &[usize]) -> usize {
+	let mut removable = jolts.to_vec();
+	removable.remove(0);
+	removable.pop();
+	let mut possible = 0usize;
+	for i in 1..jolts.len() {
+		possible += removable.iter().combinations(i).par_bridge()
+		.map(|x| if adapter_chain(jolts, x.as_slice()) {
+			//println!("can skip {:?}", x);
+			1 
+		} else { 
+			0
+		}).sum::<usize>();
+	}
+	possible
 }

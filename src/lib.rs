@@ -8,6 +8,7 @@ extern crate lazy_static;
 extern crate nom;
 extern crate rayon;
 extern crate petgraph;
+extern crate itertools;
 
 pub mod day1;
 pub mod day2;
