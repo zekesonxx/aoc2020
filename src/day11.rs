@@ -1,5 +1,7 @@
+use std::convert::TryFrom;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 enum Cell {
 	Floor,
 	Seat,
@@ -36,19 +38,6 @@ fn at(grid: &Vec<Vec<Cell>>, y: usize, x: usize) -> Cell {
 fn part1(input: &Vec<Vec<Cell>>) -> usize {
 	let mut grid = input.clone();
 	loop {
-		for row in grid.iter() {
-			for c in row.iter() {
-				print!("{}", match c {
-					Floor => '.',
-					Seat => 'L',
-					OccupiedSeat => '#'
-				});
-			}
-			println!();
-		}
-		println!();
-		
-		
 		let lastgrid = grid.clone();
 		let mut changed = false;
 		
@@ -85,6 +74,76 @@ fn part1(input: &Vec<Vec<Cell>>) -> usize {
 				if adajcent == 0 {
 					grid[y][x] = OccupiedSeat;
 				} else if adajcent >= 4 {
+					grid[y][x] = Seat;
+				}
+				if lastgrid[y][x] != grid[y][x] {
+					changed = true;
+				}
+			}
+		}
+		
+		if !changed {
+			break;
+		}
+	}
+	grid.iter().map(|row| row.iter().map(|c| if *c == OccupiedSeat {1}else{0}).sum::<usize>()).sum()
+}
+
+fn search_at(grid: &Vec<Vec<Cell>>, cy: usize, cx: usize, searchy: isize, searchx: isize) -> usize {
+	let mut distance = 1;
+	let cy = isize::try_from(cy).unwrap();
+	let cx = isize::try_from(cx).unwrap();
+	let rows = isize::try_from(grid.len()).unwrap();
+	let cols = isize::try_from(grid[0].len()).unwrap();
+	let yrange = 0..rows;
+	let xrange = 0..cols;
+	loop {
+		let y = cy + (searchy*distance);
+		let x = cx + (searchx*distance);
+		if !(yrange.contains(&y) && xrange.contains(&x)) {
+			return 0;
+		}
+		
+		if let Some(row) = grid.get(usize::try_from(y).unwrap_or(0)) {
+			if let Some(c) = row.get(usize::try_from(x).unwrap_or(0)) {
+				if *c == OccupiedSeat {
+					return 1;
+				} else if *c == Seat {
+					return 0;
+				}
+				distance += 1;
+			}
+		}
+	}
+}
+
+#[aoc(day11, part2)]
+fn part2(input: &Vec<Vec<Cell>>) -> usize {
+	let mut grid = input.clone();
+	loop {
+		let lastgrid = grid.clone();
+		let mut changed = false;
+		
+		for y in 0..grid.len() {
+			for x in 0..grid[0].len() {
+				if grid[y][x] == Floor {
+					continue;
+				}
+				let mut adajcent = 0;
+				adajcent += search_at(&lastgrid, y, x, -1,  0);
+				adajcent += search_at(&lastgrid, y, x, -1,  1);
+				adajcent += search_at(&lastgrid, y, x, -1, -1);
+				adajcent += search_at(&lastgrid, y, x,  0,  1);
+				adajcent += search_at(&lastgrid, y, x,  0, -1);
+				adajcent += search_at(&lastgrid, y, x,  1,  0);
+				adajcent += search_at(&lastgrid, y, x,  1,  1);
+				adajcent += search_at(&lastgrid, y, x,  1, -1);
+				
+				//println!("adajcent: {}", adajcent);
+				
+				if adajcent == 0 {
+					grid[y][x] = OccupiedSeat;
+				} else if adajcent >= 5 {
 					grid[y][x] = Seat;
 				}
 				if lastgrid[y][x] != grid[y][x] {
