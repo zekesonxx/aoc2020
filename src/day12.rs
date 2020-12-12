@@ -26,12 +26,16 @@ impl Direction {
 	}
 }
 
-#[aoc(day12, part1)]
-fn part1(input: &str) -> isize {
-	let commands: Vec<(char, isize)> = input.split('\n')
+#[aoc_generator(day12)]
+fn day12_gen(input: &str) -> Vec<(char, isize)> {
+	input.split('\n')
 	.map(|x| {
 		(x.chars().next().unwrap(), x[1..x.len()].parse().unwrap())
-	}).collect();
+	}).collect()
+}
+
+#[aoc(day12, part1)]
+fn part1(commands: &[(char, isize)]) -> isize {
 	let mut x = 0;
 	let mut y = 0;
 	let mut direction = East;
@@ -58,20 +62,12 @@ fn part1(input: &str) -> isize {
 			},
 			_ => unreachable!("malformed input")
 		}
-		println!("cmd: {:?}, position: {} {} {} {}", cmd,
-		y, if y > 0 { "east" } else {"west"},
-		x, if x > 0 { "north" } else {"south"}
-		);
 	}
 	x.abs()+y.abs()
 }
 
 #[aoc(day12, part2)]
-fn part2(input: &str) -> isize {
-	let commands: Vec<(char, isize)> = input.split('\n')
-	.map(|x| {
-		(x.chars().next().unwrap(), x[1..x.len()].parse().unwrap())
-	}).collect();
+fn part2(commands: &[(char, isize)]) -> isize {
 	let mut x = 0;
 	let mut y = 0;
 	let mut wx = 1;
@@ -100,12 +96,6 @@ fn part2(input: &str) -> isize {
 			},
 			_ => unreachable!("malformed input")
 		}
-		println!("cmd: {:?}, position: {} {} {} {}, waypoint: {} {} {} {}", cmd,
-		y, if y > 0 { "east" } else {"west"},
-		x, if x > 0 { "north" } else {"south"},
-		wy, if wy > 0 { "east" } else {"west"},
-		wx, if wx > 0 { "north" } else {"south"},
-		);
 	}
 	x.abs()+y.abs()
 }
