@@ -65,3 +65,47 @@ fn part1(input: &str) -> isize {
 	}
 	x.abs()+y.abs()
 }
+
+#[aoc(day12, part2)]
+fn part2(input: &str) -> isize {
+	let commands: Vec<(char, isize)> = input.split('\n')
+	.map(|x| {
+		(x.chars().next().unwrap(), x[1..x.len()].parse().unwrap())
+	}).collect();
+	let mut x = 0;
+	let mut y = 0;
+	let mut wx = 1;
+	let mut wy = 10;
+	for cmd in commands {
+		match cmd {
+			('N', v) => wx += v,
+			('S', v) => wx -= v,
+			('E', v) => wy += v,
+			('W', v) => wy -= v,
+			('F', v) => {
+				x += v*wx;
+				y += v*wy;
+			},
+			('L', mut v) => while v > 0 {
+				let (owx, owy) = (wx, wy);
+				wx = owy;
+				wy = 0-owx;
+				v -= 90;
+			},
+			('R', mut v) => while v > 0 {
+				let (owx, owy) = (wx, wy);
+				wx = 0-owy;
+				wy = owx;
+				v -= 90;
+			},
+			_ => unreachable!("malformed input")
+		}
+		println!("cmd: {:?}, position: {} {} {} {}, waypoint: {} {} {} {}", cmd,
+		y, if y > 0 { "east" } else {"west"},
+		x, if x > 0 { "north" } else {"south"},
+		wy, if wy > 0 { "east" } else {"west"},
+		wx, if wx > 0 { "north" } else {"south"},
+		);
+	}
+	x.abs()+y.abs()
+}
